@@ -30,7 +30,7 @@ Technologies Used
 
 React Native (Expo)
 React Navigation
-Redux for state management
+state management
 Local Storage
 React Native UI Components
 
