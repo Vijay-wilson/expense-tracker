@@ -34,3 +34,6 @@ state management
 Local Storage
 React Native UI Components
 
+
+Tested device : iPhone 16 pro max
+
