@@ -7,16 +7,16 @@ import {
   FlatList,
   Alert,
   ScrollView,
+  StyleSheet,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { LineChart } from "react-native-chart-kit";
-import { Dimensions } from "react-native";
 
 const screenWidth = Dimensions.get("window").width;
 
-// Category Icons and Colors
 const CATEGORIES = {
   food: { icon: "restaurant-outline", color: "#F59E0B" },
   transport: { icon: "car-outline", color: "#3B82F6" },
@@ -26,7 +26,6 @@ const CATEGORIES = {
   other: { icon: "ellipsis-horizontal-outline", color: "#6B7280" },
 };
 
-// Enhanced Header Component with Chart
 const Header = ({ totalBalance, transactions }) => {
   const getChartData = () => {
     const last7Days = [...Array(7)]
@@ -51,20 +50,20 @@ const Header = ({ totalBalance, transactions }) => {
   };
 
   return (
-    <View className="bg-white p-4 rounded-b-3xl shadow-lg mb-4">
-      <View className="flex-row items-center justify-between mb-4">
+    <View style={styles.headerContainer}>
+      <View style={styles.balanceContainer}>
         <View>
-          <Text className="text-gray-500">Total Balance</Text>
-          <Text className="text-3xl font-bold">
+          <Text style={styles.balanceLabel}>Total Balance</Text>
+          <Text style={styles.balanceAmount}>
             ₹{totalBalance.toLocaleString()}
           </Text>
         </View>
-        <TouchableOpacity className="bg-indigo-100 p-3 rounded-full">
+        <TouchableOpacity style={styles.notificationButton}>
           <Ionicons name="notifications-outline" size={24} color="#6366F1" />
         </TouchableOpacity>
       </View>
 
-      <View className="h-200">
+      <View style={styles.chartContainer}>
         <LineChart
           data={getChartData()}
           width={screenWidth - 40}
@@ -78,17 +77,17 @@ const Header = ({ totalBalance, transactions }) => {
             style: { borderRadius: 16 },
           }}
           bezier
-          style={{ borderRadius: 16 }}
+          style={styles.chart}
         />
       </View>
 
-      <View className="flex-row justify-between mt-6">
-        <View className="bg-green-100 p-4 rounded-2xl flex-1 mr-2">
-          <View className="bg-green-200 self-start p-2 rounded-full mb-2">
+      <View style={styles.statsContainer}>
+        <View style={styles.incomeContainer}>
+          <View style={styles.incomeIconContainer}>
             <Ionicons name="trending-up" size={20} color="#059669" />
           </View>
-          <Text className="text-green-800">Income</Text>
-          <Text className="text-green-800 font-bold text-lg">
+          <Text style={styles.incomeLabel}>Income</Text>
+          <Text style={styles.incomeAmount}>
             ₹
             {transactions
               .filter((t) => t.amount > 0)
@@ -96,12 +95,12 @@ const Header = ({ totalBalance, transactions }) => {
               .toLocaleString()}
           </Text>
         </View>
-        <View className="bg-red-100 p-4 rounded-2xl flex-1 ml-2">
-          <View className="bg-red-200 self-start p-2 rounded-full mb-2">
+        <View style={styles.expenseContainer}>
+          <View style={styles.expenseIconContainer}>
             <Ionicons name="trending-down" size={20} color="#DC2626" />
           </View>
-          <Text className="text-red-800">Expenses</Text>
-          <Text className="text-red-800 font-bold text-lg">
+          <Text style={styles.expenseLabel}>Expenses</Text>
+          <Text style={styles.expenseAmount}>
             ₹
             {Math.abs(
               transactions
@@ -115,7 +114,6 @@ const Header = ({ totalBalance, transactions }) => {
   );
 };
 
-// Enhanced Add Transaction Component
 const AddTransaction = ({ onTransactionAdded, visible, onClose }) => {
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
@@ -153,7 +151,6 @@ const AddTransaction = ({ onTransactionAdded, visible, onClose }) => {
       onTransactionAdded();
       onClose();
 
-      // Clear form
       setTitle("");
       setAmount("");
       setCategory("other");
@@ -167,32 +164,44 @@ const AddTransaction = ({ onTransactionAdded, visible, onClose }) => {
   if (!visible) return null;
 
   return (
-    <View className="absolute inset-0 bg-black/50 justify-end">
-      <View className="bg-white p-6 ">
-        <View className="flex-row justify-between items-center mb-6">
-          <Text className="text-xl font-bold">Add Transaction</Text>
+    <View style={styles.modalOverlay}>
+      <View style={styles.modalContainer}>
+        <View style={styles.modalHeader}>
+          <Text style={styles.modalTitle}>Add Transaction</Text>
           <TouchableOpacity onPress={onClose}>
             <Ionicons name="close" size={24} color="#6B7280" />
           </TouchableOpacity>
         </View>
 
-        <View className="flex-row justify-between mb-6">
+        <View style={styles.transactionTypeContainer}>
           <TouchableOpacity
-            className={`flex-1 p-3 rounded-xl mr-2 ${!isExpense ? "bg-green-100" : "bg-gray-100"}`}
+            style={[
+              styles.transactionTypeButton,
+              !isExpense && styles.transactionTypeButtonActive,
+            ]}
             onPress={() => setIsExpense(false)}
           >
             <Text
-              className={`text-center ${!isExpense ? "text-green-800" : "text-gray-600"}`}
+              style={[
+                styles.transactionTypeText,
+                !isExpense && styles.transactionTypeTextActive,
+              ]}
             >
               Income
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            className={`flex-1 p-3 rounded-xl ml-2 ${isExpense ? "bg-red-100" : "bg-gray-100"}`}
+            style={[
+              styles.transactionTypeButton,
+              isExpense && styles.transactionTypeButtonActive,
+            ]}
             onPress={() => setIsExpense(true)}
           >
             <Text
-              className={`text-center ${isExpense ? "text-red-800" : "text-gray-600"}`}
+              style={[
+                styles.transactionTypeText,
+                isExpense && styles.transactionTypeTextActive,
+              ]}
             >
               Expense
             </Text>
@@ -200,14 +209,14 @@ const AddTransaction = ({ onTransactionAdded, visible, onClose }) => {
         </View>
 
         <TextInput
-          className="bg-gray-50 rounded-xl p-4 mb-4"
+          style={styles.input}
           placeholder="Title"
           value={title}
           onChangeText={setTitle}
         />
 
         <TextInput
-          className="bg-gray-50 rounded-xl p-4 mb-4"
+          style={styles.input}
           placeholder="Amount"
           value={amount}
           onChangeText={setAmount}
@@ -217,27 +226,27 @@ const AddTransaction = ({ onTransactionAdded, visible, onClose }) => {
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          className="mb-4"
+          style={styles.categoryScroll}
         >
           {Object.entries(CATEGORIES).map(([key, { icon, color }]) => (
             <TouchableOpacity
               key={key}
-              className={`mr-4 items-center ${category === key ? "opacity-100" : "opacity-50"}`}
+              style={[
+                styles.categoryButton,
+                { opacity: category === key ? 1 : 0.5 },
+              ]}
               onPress={() => setCategory(key)}
             >
-              <View
-                style={{ backgroundColor: color }}
-                className="p-3 rounded-full mb-1"
-              >
+              <View style={[styles.categoryIcon, { backgroundColor: color }]}>
                 <Ionicons name={icon} size={20} color="white" />
               </View>
-              <Text className="text-xs capitalize">{key}</Text>
+              <Text style={styles.categoryText}>{key}</Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
 
         <TouchableOpacity
-          className="bg-gray-50 rounded-xl p-4 mb-6"
+          style={styles.dateButton}
           onPress={() => setShowDatePicker(true)}
         >
           <Text>{date.toLocaleDateString()}</Text>
@@ -254,29 +263,25 @@ const AddTransaction = ({ onTransactionAdded, visible, onClose }) => {
           />
         )}
 
-        <TouchableOpacity
-          className="bg-indigo-600 p-4 rounded-xl"
-          onPress={handleSave}
-        >
-          <Text className="text-white text-center font-semibold">
-            Save Transaction
-          </Text>
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+          <Text style={styles.saveButtonText}>Save Transaction</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 };
 
-// Enhanced Transaction List Component
 const TransactionList = ({ onDelete, transactions }) => {
   const renderTransaction = ({ item }) => (
-    <TouchableOpacity className="flex-row items-center bg-white p-4 mb-3 rounded-xl shadow-sm">
+    <TouchableOpacity style={styles.transactionItem}>
       <View
-        style={{
-          backgroundColor:
-            CATEGORIES[item.category]?.color || CATEGORIES.other.color,
-        }}
-        className="w-12 h-12 rounded-full items-center justify-center mr-4"
+        style={[
+          styles.transactionIcon,
+          {
+            backgroundColor:
+              CATEGORIES[item.category]?.color || CATEGORIES.other.color,
+          },
+        ]}
       >
         <Ionicons
           name={CATEGORIES[item.category]?.icon || CATEGORIES.other.icon}
@@ -285,20 +290,26 @@ const TransactionList = ({ onDelete, transactions }) => {
         />
       </View>
 
-      <View className="flex-1">
-        <Text className="font-semibold text-gray-900">{item.title}</Text>
-        <Text className="text-gray-500 text-sm">
+      <View style={styles.transactionDetails}>
+        <Text style={styles.transactionTitle}>{item.title}</Text>
+        <Text style={styles.transactionDate}>
           {new Date(item.date).toLocaleDateString()}
         </Text>
       </View>
 
-      <View className="items-end">
+      <View style={styles.transactionAmount}>
         <Text
-          className={`font-bold ${item.amount > 0 ? "text-green-600" : "text-red-600"}`}
+          style={[
+            styles.amount,
+            item.amount > 0 ? styles.incomeAmount : styles.expenseAmount,
+          ]}
         >
           {item.amount > 0 ? "+" : ""}₹{Math.abs(item.amount).toLocaleString()}
         </Text>
-        <TouchableOpacity onPress={() => onDelete(item.id)} className="mt-1">
+        <TouchableOpacity
+          onPress={() => onDelete(item.id)}
+          style={styles.deleteButton}
+        >
           <Ionicons name="trash-outline" size={16} color="#6B7280" />
         </TouchableOpacity>
       </View>
@@ -306,8 +317,8 @@ const TransactionList = ({ onDelete, transactions }) => {
   );
 
   return (
-    <View className="flex-1 px-4">
-      <Text className="text-xl font-bold mb-4">Recent Transactions</Text>
+    <View style={styles.transactionList}>
+      <Text style={styles.transactionListTitle}>Recent Transactions</Text>
       <FlatList
         data={transactions}
         renderItem={renderTransaction}
@@ -318,7 +329,6 @@ const TransactionList = ({ onDelete, transactions }) => {
   );
 };
 
-// Main Expense Management Screen
 const ExpenseManagement = () => {
   const [transactions, setTransactions] = useState([]);
   const [showAddTransaction, setShowAddTransaction] = useState(false);
@@ -368,11 +378,9 @@ const ExpenseManagement = () => {
 
   return (
     <>
-      <View className="flex-1 w-full bg-gray-50 min-h-screen">
+      <View style={styles.container}>
         <Header totalBalance={totalBalance} transactions={transactions} />
-
         <TransactionList transactions={transactions} onDelete={handleDelete} />
-
         <AddTransaction
           visible={showAddTransaction}
           onClose={() => setShowAddTransaction(false)}
@@ -380,9 +388,9 @@ const ExpenseManagement = () => {
         />
       </View>
 
-      <View className="absolute bottom-6 left-0 right-0 items-center">
+      <View style={styles.addButtonContainer}>
         <TouchableOpacity
-          className="bg-indigo-600 w-14 h-14 rounded-full items-center justify-center shadow-lg"
+          style={styles.addButton}
           onPress={() => setShowAddTransaction(true)}
         >
           <Ionicons name="add" size={30} color="white" />
@@ -391,5 +399,251 @@ const ExpenseManagement = () => {
     </>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    width: "100%",
+    backgroundColor: "#f9fafb",
+    minHeight: "100%",
+  },
+  headerContainer: {
+    backgroundColor: "white",
+    padding: 16,
+    borderBottomRightRadius: 24,
+    borderBottomLeftRadius: 24,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    marginBottom: 16,
+  },
+  balanceContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  balanceLabel: {
+    color: "#6B7280",
+  },
+  balanceAmount: {
+    fontSize: 32,
+    fontWeight: "bold",
+  },
+  notificationButton: {
+    backgroundColor: "#EEF2FF",
+    padding: 12,
+    borderRadius: 9999,
+  },
+  chartContainer: {
+    height: 200,
+  },
+  chart: {
+    borderRadius: 16,
+  },
+  statsContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 24,
+  },
+  incomeContainer: {
+    backgroundColor: "#D1FAE5",
+    padding: 16,
+    borderRadius: 16,
+    flex: 1,
+    marginRight: 8,
+  },
+  expenseContainer: {
+    backgroundColor: "#FEE2E2",
+    padding: 16,
+    borderRadius: 16,
+    flex: 1,
+    marginLeft: 8,
+  },
+  incomeIconContainer: {
+    backgroundColor: "#A7F3D0",
+    alignSelf: "flex-start",
+    padding: 8,
+    borderRadius: 9999,
+    marginBottom: 8,
+  },
+  expenseIconContainer: {
+    backgroundColor: "#FECACA",
+    alignSelf: "flex-start",
+    padding: 8,
+    borderRadius: 9999,
+    marginBottom: 8,
+  },
+
+  incomeAmount: {
+    color: "#065F46",
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  expenseLabel: {
+    color: "#991B1B",
+  },
+  expenseAmount: {
+    color: "#991B1B",
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  modalOverlay: {
+    position: "absolute",
+    // top: 0,
+    // bottom: 300,
+    // left: 0,
+    // right: 0,
+    // backgroundColor: "rgba(0, 0, 0, 0.5)",
+    // justifyContent: "flex-end",
+  },
+  modalContainer: {
+    backgroundColor: "white",
+    padding: 24,
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+  },
+  modalHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+  },
+  transactionTypeContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 24,
+  },
+  transactionTypeButton: {
+    flex: 1,
+    padding: 12,
+    borderRadius: 12,
+    marginHorizontal: 4,
+    backgroundColor: "#F3F4F6",
+  },
+  transactionTypeButtonActive: {
+    backgroundColor: "#57ff57",
+  },
+  transactionTypeText: {
+    textAlign: "center",
+  },
+  transactionTypeTextActive: {
+    color: "#991B1B",
+  },
+  input: {
+    backgroundColor: "#F9FAFB",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+  },
+  categoryScroll: {
+    marginBottom: 16,
+  },
+  categoryButton: {
+    marginRight: 16,
+    alignItems: "center",
+  },
+  categoryIcon: {
+    padding: 12,
+    borderRadius: 9999,
+    marginBottom: 4,
+  },
+  categoryText: {
+    fontSize: 12,
+    textTransform: "capitalize",
+  },
+  dateButton: {
+    backgroundColor: "#F9FAFB",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+  },
+  saveButton: {
+    backgroundColor: "#4F46E5",
+    padding: 16,
+    borderRadius: 12,
+  },
+  saveButtonText: {
+    color: "white",
+    textAlign: "center",
+    fontWeight: "600",
+  },
+  transactionList: {
+    flex: 1,
+    paddingHorizontal: 16,
+  },
+  transactionListTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 16,
+  },
+  transactionItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "white",
+    padding: 16,
+    marginBottom: 12,
+    borderRadius: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  transactionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: "center",
+    justifyContent: "center",
+    marginRight: 16,
+  },
+  transactionDetails: {
+    flex: 1,
+  },
+  transactionTitle: {
+    fontWeight: "600",
+    color: "#111827",
+  },
+  transactionDate: {
+    color: "#6B7280",
+    fontSize: 12,
+  },
+  transactionAmount: {
+    alignItems: "flex-end",
+  },
+  amount: {
+    fontWeight: "bold",
+  },
+  deleteButton: {
+    marginTop: 4,
+  },
+  addButtonContainer: {
+    position: "absolute",
+    bottom: 24,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+  },
+  addButton: {
+    backgroundColor: "#4F46E5",
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+});
 
 export default ExpenseManagement;
